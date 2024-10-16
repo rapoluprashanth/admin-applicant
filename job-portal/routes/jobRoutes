@@ -1,0 +1,67 @@
+const express=require('express');
+const axios = require('axios');
+const router=express.Router();
+const mongoose=require('mongoose'); 
+const Jobs=require('../model/Job');
+
+router.post('/add',async(req,res)=>{
+    const job=new Jobs({
+        title:req.body.title,
+        jobId:req.body.jobId
+     
+    })
+    try{
+        const newJob=await job.save();
+        res.status(201).json(newJob);
+    }catch(err){
+        res.status(400).json({message:err.message})
+    }
+})
+router.get('/allJobs',async(req, res)=>{
+    try{
+        const allJobs=await Jobs.find();
+        res.json(allJobs);
+    }catch(err){
+        res.status(500).json({message:err.message})
+    }
+})
+router.get('/:jobId',async(req, res)=>{
+    try{
+        const jobId = req.params.jobId;
+        const job=await Jobs.findOne({jobId:jobId});
+        res.json(job);
+    }catch(err){
+        res.status(500).json({message:err.message})
+    }
+})
+router.get('/:jobId',async(req,res)=>{
+    try{
+        const jobId = req.params.jobId;
+        
+        const allApplicants=await axios.get(`http://localhost:4000/applicant/${jobId}`);
+        res.json(allApplicants.data);
+    }catch(err){
+        res.status(500).json({message:err.message})
+    }
+})
+
+router.put('/:jobId',async(req, res)=>{
+    try{
+        const jobId = req.params.jobId;
+        const updatedJob=await Jobs.findOneAndUpdate({jobId:jobId},req.body,{new:true});
+        res.json(updatedJob);
+    }catch(err){
+        res.status(400).json({message:err.message})
+    }
+})
+
+router.delete('/:jobId',async(req, res)=>{
+    try{
+        const jobId = req.params.jobId;
+        const deletedJob=await Jobs.findOneAndDelete({jobId:jobId});
+        res.json(deletedJob);
+    }catch(err){
+        res.status(500).json({message:err.message})
+    }
+})
+module.exports=router;
